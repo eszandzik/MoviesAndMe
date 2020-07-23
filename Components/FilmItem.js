@@ -1,18 +1,32 @@
 import React from 'react'
-import {StyleSheet, View, Text, Image} from 'react-native'
+import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native'
 import {getImageFromApi} from '../API/TMDBApi'
 
 
 class FilmItem extends React.Component {
+
+    _displayFavoriteImage() {
+        if (this.props.isFilmFavorite) {  // Si la props IsFilmFavoris vaut true, on affiche le coeur
+            return(
+                <Image
+                    style={ styles.favorite_image}
+                    source={require('../Images/ic_favorite.png')}
+                    />
+            )
+        }
+    }
+
     render() {
-        const film = this.props.film
+        const { film, displayDetailForFilm } = this.props
         return (
-            <View style={styles.main_container}>
+            <TouchableOpacity style={styles.main_container}
+            onPress={() => displayDetailForFilm(film.id)}>
                 <Image style={styles.image}
                        source={{uri: getImageFromApi(film.poster_path)}}
                 />
                 <View style={styles.content_container}>
                     <View style={styles.header_container}>
+                        {this._displayFavoriteImage()}
                         <Text styles={styles.title_text}>{film.title}</Text>
                         <Text style={styles.vote_text}>{film.vote_average}</Text>
                     </View>
@@ -23,7 +37,7 @@ class FilmItem extends React.Component {
                         <Text style={styles.date_text}>{film.release_date}</Text>
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         )
     }
 }
@@ -44,7 +58,7 @@ const styles = StyleSheet.create({
     },
     header_container: {
         flex: 3,
-        marginBottom: 5
+        flexDirection: 'row'
     },
     title_text: {
         fontWeight: 'bold',
@@ -72,6 +86,11 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         fontSize: 14
     },
+    favorite_image: {
+        width: 25,
+        height: 25,
+        marginLeft: 5
+    }
 })
 
 export default FilmItem

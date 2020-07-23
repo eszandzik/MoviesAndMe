@@ -2,6 +2,7 @@ import React from 'react'
 import {StyleSheet, View, Button, TextInput, Text, FlatList, ActivityIndicator} from 'react-native'
 import FilmItem from "./FilmItem"
 import {getFilmFromApiWithSearchedText} from '../API/TMDBApi'
+import connect from "react-redux/lib/connect/connect";
 
 
 class Search extends React.Component {
@@ -59,9 +60,11 @@ class Search extends React.Component {
 
     _displayDetailForFilm = (idFilm) => {
         console.log("Display film with id " + idFilm)
+        this.props.navigation.navigate("FilmDetail", {idFilm: idFilm})
     }
 
     render() {
+        console.log(this.props)
         return (
             <View style={styles.main_container}>
                 <TextInput style={styles.textinput}
@@ -72,8 +75,12 @@ class Search extends React.Component {
                 <Button title="rechercher" onPress={() => this._searchFilms()}/>
                 <FlatList
                     data={this.state.films}
+                    extraData={this.props.favoritesFilm} // On utilise la props extraData pour indiquer à notre FlateList que d'autres données doivent etre prises en compte si on lui demande de se re-rendre
                     keyExtractor={(item) => item.id.toString()}
-                    renderItem={({item}) => <FilmItem film={item}/>}
+                    renderItem={({item}) => <FilmItem film={item}
+                                                      // Ajout d'une props isFilmFavorite pour indiquer à l'item d'afficher un coeur plein ou non
+                                                      isFilmFavorite={(this.props.favoritesFilm.findIndex(film => film.id === item.id) !== -1) ? true : false}
+                                                      displayDetailForFilm={this._displayDetailForFilm}/>}
                     onEndReachedThreshold={0.5}
                     onEndReached={() => {
                         if (this.page < this.totalPages) { // On vérifie qu'on n'a pas atteint la fin de la pagination (totalpages) avant de charger d'éléments
@@ -89,8 +96,7 @@ class Search extends React.Component {
 
 const styles = StyleSheet.create({
     main_container: {
-        flex: 1,
-        marginTop: 20
+        flex: 1
     },
     textinput: {
         marginLeft: 5,
@@ -110,5 +116,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     }
 })
+// On connect le store Redux ainsi que les films favoris du state de notre application, à notre component Search
+const mapStateToProps = state => {
+    return {
+        favoritesFilm: state.favoritesFilm
+    }
+}
 
-export default Search
+export default connect(mapStateToProps) (Search)
